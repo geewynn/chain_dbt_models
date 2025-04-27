@@ -30,6 +30,8 @@ then run
 `set -a; source .env; set +a`
 `dbt debug --profile chain_dbt_models --target prod`
 
+This should work for windows
+
 
 ### Resources:
 - Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
