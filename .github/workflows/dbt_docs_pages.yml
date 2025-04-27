@@ -18,6 +18,20 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      # Tell dbt where the repo-scoped profiles.yml lives
+      DBT_PROFILES_DIR: .
+      # Inject warehouse secrets from Settings → Secrets → Actions
+      CLICKHOUSE_DEV_PASSWORD: ${{ secrets.CLICKHOUSE_DEV_PASSWORD }}
+      CLICKHOUSE_DEV_HOST: ${{ secrets.CLICKHOUSE_DEV_HOST }}
+      CLICKHOUSE_DEV_USER: ${{ secrets.CLICKHOUSE_DEV_USER }}
+      CLICKHOUSE_DEV_PORT: ${{ secrets.CLICKHOUSE_DEV_PORT }}
+      CLICKHOUSE_DEV_SCHEMA: ${{ secrets.CLICKHOUSE_DEV_SCHEMA }}
+      CLICKHOUSE_PROD_PASSWORD: ${{ secrets.CLICKHOUSE_PROD_PASSWORD }}
+      CLICKHOUSE_PROD_HOST: ${{ secrets.CLICKHOUSE_PROD_HOST }}
+      CLICKHOUSE_PROD_USER: ${{ secrets.CLICKHOUSE_PROD_USER }}
+      CLICKHOUSE_PROD_PORT: ${{ secrets.CLICKHOUSE_PROD_PORT }}
+      CLICKHOUSE_PROD_SCHEMA: ${{ secrets.CLICKHOUSE_PROD_SCHEMA }}
 
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +41,7 @@ jobs:
 
       - name: Install dbt (no linter needed)
         run: |
-          pip install "dbt-core==1.8.0" "dbt-clickhouse==1.8.0"
+          pip install "dbt-core" "dbt-clickhouse"
 
       - name: dbt deps
         run: dbt deps
