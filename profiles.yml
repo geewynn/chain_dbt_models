@@ -1,0 +1,21 @@
+# ~/.dbt/profiles.yml or ./profiles.yml (if using DBT_PROFILES_DIR to point here)
+chain_dbt_models:                # Profile name (referenced in dbt_project.yml)
+  target: dev                  # Default target name
+  outputs:
+    dev:
+      type: clickhouse
+      schema: "{{ env_var('CLICKHOUSE_DEV_SCHEMA') }}"   # ClickHouse database to use for models
+      host: "{{ env_var('CLICKHOUSE_DEV_HOST') }}"       # Host of ClickHouse (use actual hostname or IP)
+      port: "{{ env_var('CLICKHOUSE_DEV_PORT')| int }}"               
+      user: "{{ env_var('CLICKHOUSE_DEV_USER') }}"           # ClickHouse user
+      password: "{{ env_var('CLICKHOUSE_DEV_PASSWORD') }}" # Use env var for security
+      threads: 4               
+
+    prod:
+      type: clickhouse
+      schema: "{{ env_var('CLICKHOUSE_PROD_SCHEMA') }}"       # Production ClickHouse database
+      host: "{{ env_var('CLICKHOUSE_PROD_HOST') }}"
+      port: "{{ env_var('CLICKHOUSE_PROD_PORT') | int }}"
+      user: "{{ env_var('CLICKHOUSE_PROD_USER') }}"
+      password: "{{ env_var('CLICKHOUSE_PROD_PASSWORD') }}"
+      threads: 4
