@@ -2,9 +2,9 @@ name: Publish dbt Docs → GitHub Pages
 
 on:
   workflow_run:
-    workflows: ["dbt CI"]        # must exactly match the name above
-    branches: [main]             # deploy only after CI on main
-    types: [completed]
+    workflows: ["dbt CI"]        # must match the CI workflow name
+    branches:  [main]
+    types:     [completed]
 
 concurrency:
   group: pages
@@ -12,6 +12,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions:  read                 
   pages:    write
   id-token: write
 
@@ -21,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DBT_PROFILES_DIR: .
-      # same secrets set as in CI (needed only if you ever rebuild docs here)
       CLICKHOUSE_PROD_PASSWORD: ${{ secrets.CLICKHOUSE_PROD_PASSWORD }}
       CLICKHOUSE_PROD_HOST:     ${{ secrets.CLICKHOUSE_PROD_HOST }}
       CLICKHOUSE_PROD_USER:     ${{ secrets.CLICKHOUSE_PROD_USER }}
@@ -29,16 +29,16 @@ jobs:
       CLICKHOUSE_PROD_SCHEMA:   ${{ secrets.CLICKHOUSE_PROD_SCHEMA }}
 
     steps:
-      # 1. Download the docs artifact produced by the CI run
-      - uses: actions/download-artifact@v4
+      - name: Download docs artifact from CI run
+        uses: actions/download-artifact@v4
         with:
           name: dbt-docs
           run-id: ${{ github.event.workflow_run.id }}
-          path: ./site                   
+          github-token: ${{ secrets.GITHUB_TOKEN }}  
 
-      # 2. Publish to GitHub Pages
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: ./site
+          path: dbt-docs
 
       - uses: actions/deploy-pages@v2
