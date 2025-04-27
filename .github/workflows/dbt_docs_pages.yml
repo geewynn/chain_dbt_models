@@ -1,58 +1,44 @@
 name: Publish dbt Docs → GitHub Pages
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:          # let you trigger a manual rebuild if needed
+  workflow_run:
+    workflows: ["dbt CI"]        # must exactly match the name above
+    branches: [main]             # deploy only after CI on main
+    types: [completed]
 
-# One deployment at a time
 concurrency:
   group: pages
   cancel-in-progress: true
 
 permissions:
   contents: read
-  pages:    write             # needed by upload-pages-artifact & deploy-pages
-  id-token: write             # OIDC auth for GitHub Pages
+  pages:    write
+  id-token: write
 
 jobs:
-  build-and-deploy:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     env:
-      # Tell dbt where the repo-scoped profiles.yml lives
       DBT_PROFILES_DIR: .
-      # Inject warehouse secrets from Settings → Secrets → Actions
-      CLICKHOUSE_DEV_PASSWORD: ${{ secrets.CLICKHOUSE_DEV_PASSWORD }}
-      CLICKHOUSE_DEV_HOST: ${{ secrets.CLICKHOUSE_DEV_HOST }}
-      CLICKHOUSE_DEV_USER: ${{ secrets.CLICKHOUSE_DEV_USER }}
-      CLICKHOUSE_DEV_PORT: ${{ secrets.CLICKHOUSE_DEV_PORT }}
-      CLICKHOUSE_DEV_SCHEMA: ${{ secrets.CLICKHOUSE_DEV_SCHEMA }}
+      # same secrets set as in CI (needed only if you ever rebuild docs here)
       CLICKHOUSE_PROD_PASSWORD: ${{ secrets.CLICKHOUSE_PROD_PASSWORD }}
-      CLICKHOUSE_PROD_HOST: ${{ secrets.CLICKHOUSE_PROD_HOST }}
-      CLICKHOUSE_PROD_USER: ${{ secrets.CLICKHOUSE_PROD_USER }}
-      CLICKHOUSE_PROD_PORT: ${{ secrets.CLICKHOUSE_PROD_PORT }}
-      CLICKHOUSE_PROD_SCHEMA: ${{ secrets.CLICKHOUSE_PROD_SCHEMA }}
+      CLICKHOUSE_PROD_HOST:     ${{ secrets.CLICKHOUSE_PROD_HOST }}
+      CLICKHOUSE_PROD_USER:     ${{ secrets.CLICKHOUSE_PROD_USER }}
+      CLICKHOUSE_PROD_PORT:     ${{ secrets.CLICKHOUSE_PROD_PORT }}
+      CLICKHOUSE_PROD_SCHEMA:   ${{ secrets.CLICKHOUSE_PROD_SCHEMA }}
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v4
-        with: { python-version: '3.10' }
-
-      - name: Install dbt (no linter needed)
-        run: |
-          pip install "dbt-core" "dbt-clickhouse"
-
-      - name: dbt deps
-        run: dbt deps
-
-      - name: Generate production docs
-        run: dbt docs generate --target prod
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3 
+      # 1. Download the docs artifact produced by the CI run
+      - uses: actions/download-artifact@v4
         with:
-          path: target/
+          name: dbt-docs
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./site                   
 
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2     
+      # 2. Publish to GitHub Pages
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+      - uses: actions/deploy-pages@v2
