@@ -1,0 +1,44 @@
+name: Publish dbt Docs → GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:          # let you trigger a manual rebuild if needed
+
+# One deployment at a time
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages:    write             # needed by upload-pages-artifact & deploy-pages
+  id-token: write             # OIDC auth for GitHub Pages
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with: { python-version: '3.10' }
+
+      - name: Install dbt (no linter needed)
+        run: |
+          pip install "dbt-core==1.8.0" "dbt-clickhouse==1.8.0"
+
+      - name: dbt deps
+        run: dbt deps
+
+      - name: Generate production docs
+        run: dbt docs generate --target prod
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3 
+        with:
+          path: target/
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2     
