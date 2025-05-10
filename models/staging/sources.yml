@@ -1,0 +1,230 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw Ethereum blockchain data stored in ClickHouse MergeTree tables"
+    database: default  
+    tables:
+      - name: blocks_new_data
+        description: "Sonic block data"
+        columns:
+          - name: parentHash
+            description: "Hash of the parent block"
+          - name: sha3Uncles
+            description: "SHA3 of the uncles data in the block"
+          - name: miner
+            description: "The address of the miner who mined this block"
+          - name: stateRoot
+            description: "The root of the state trie after this block"
+          - name: transactionsRoot
+            description: "The root of the transaction trie of this block"
+          - name: receiptsRoot
+            description: "The root of the receipts trie of this block"
+          - name: logsBloom
+            description: "The bloom filter for the logs of the block"
+          - name: difficulty
+            description: "Block difficulty for this block"
+          - name: number
+            description: "Block number"
+            tests:
+              - not_null
+          - name: gasLimit
+            description: "Maximum gas allowed in this block"
+          - name: gasUsed
+            description: "Total gas used by all transactions in this block"
+          - name: timestamp
+            description: "Block timestamp as a string"
+          - name: timestampNano
+            description: "Block timestamp with nanosecond precision"
+          - name: extraData
+            description: "Extra data field of this block"
+          - name: mixHash
+            description: "Mix hash of the block"
+          - name: nonce
+            description: "Nonce of the block"
+          - name: baseFeePerGas
+            description: "Base fee per gas in the block"
+          - name: hash
+            description: "Block hash"
+            tests:
+              - unique
+              - not_null
+          - name: epoch
+            description: "Block epoch"
+          - name: totalDifficulty
+            description: "Total difficulty of the chain until this block"
+          - name: withdrawalsRoot
+            description: "Root of withdrawals in the block"
+          - name: blobGasUsed
+            description: "Blob gas used in the block"
+          - name: excessBlobGas
+            description: "Excess blob gas in the block"
+          - name: size
+            description: "Block size in bytes"
+          - name: uncles
+            description: "Array of uncle block hashes"
+
+      - name: transactions_new_data
+        description: "Sonic transaction data"
+        columns:
+          - name: number
+            description: "Transaction number"
+            tests:
+              - not_null
+          - name: timestamp
+            description: "Transaction timestamp"
+          - name: blockNumber
+            description: "Block number containing this transaction"
+            tests:
+              - not_null
+          - name: blockHash
+            description: "Hash of the block containing this transaction"
+          - name: blobVersionedHashes
+            description: "Blob versioned hashes for EIP-4844 transactions"
+          - name: chainId
+            description: "Chain ID for the transaction"
+          - name: from_address
+            description: "Address of the sender"
+            tests:
+              - not_null
+          - name: gas
+            description: "Gas provided by the sender"
+          - name: gasPrice
+            description: "Gas price provided by the sender"
+          - name: hash
+            description: "Transaction hash"
+            tests:
+              - unique
+              - not_null
+          - name: input
+            description: "Transaction data payload"
+          - name: maxFeePerBlobGas
+            description: "Maximum fee per blob gas for EIP-4844 transactions"
+          - name: maxFeePerGas
+            description: "Maximum fee per gas for EIP-1559 transactions"
+          - name: maxPriorityFeePerGas
+            description: "Maximum priority fee per gas for EIP-1559 transactions"
+          - name: nonce
+            description: "Number of transactions sent from this address"
+          - name: r
+            description: "ECDSA signature r value"
+          - name: s
+            description: "ECDSA signature s value"
+          - name: to_address
+            description: "Recipient address (null for contract creation)"
+          - name: transactionIndex
+            description: "Integer of the transaction's index position in the block"
+          - name: type
+            description: "Transaction type"
+          - name: v
+            description: "ECDSA recovery ID"
+          - name: value
+            description: "Value transferred in wei"
+
+      - name: receipts_new_data
+        description: "Sonic transaction receipts data"
+        columns:
+          - name: blockHash
+            description: "Hash of the block containing this receipt"
+            tests:
+              - not_null
+          - name: blockNumber
+            description: "Block number containing this receipt"
+            tests:
+              - not_null
+          - name: contractAddress
+            description: "Contract address created in this transaction, if any"
+          - name: cumulativeGasUsed
+            description: "Total gas used in the block up to and including this transaction"
+          - name: effectiveGasPrice
+            description: "Actual gas price paid for this transaction"
+          - name: from
+            description: "Address of the sender"
+            tests:
+              - not_null
+          - name: gasUsed
+            description: "Gas used by this specific transaction"
+          - name: logs
+            description: "Array of log objects generated by this transaction"
+          - name: logsBloom
+            description: "Bloom filter for light clients to quickly retrieve related logs"
+          - name: status
+            description: "Transaction execution status (1 = success, 0 = failure)"
+          - name: to
+            description: "Recipient address"
+          - name: transactionHash
+            description: "Hash of the transaction"
+            tests:
+              - not_null
+          - name: transactionIndex
+            description: "Integer of the transaction's index position in the block"
+          - name: type
+            description: "Transaction type"
+            
+      - name: logs_new_data
+        description: "Sonic event logs data"
+        columns:
+          - name: address
+            description: "Address from which this log originated"
+            tests:
+              - not_null
+          - name: topics
+            description: "Array of indexed log arguments (topics)"
+          - name: data
+            description: "Non-indexed log arguments"
+          - name: blockNumber
+            description: "Block number containing this log"
+            tests:
+              - not_null
+          - name: transactionHash
+            description: "Hash of the transaction that created this log"
+            tests:
+              - not_null
+          - name: blockHash
+            description: "Hash of the block containing this log"
+          - name: logIndex
+            description: "Integer of the log index position in the block"
+            tests:
+              - not_null
+          - name: removed
+            description: "Boolean indicating if the log was removed due to a chain reorganization"
+            
+      - name: traces_new_data
+        description: "Sonic transaction traces data"
+        columns:
+          - name: callType
+            description: "Type of the call (call, staticcall, delegatecall, etc.)"
+          - name: from_address
+            description: "Address of the sender"
+            tests:
+              - not_null
+          - name: gas
+            description: "Gas provided for the transaction execution"
+          - name: input
+            description: "Call data input"
+          - name: to_address
+            description: "Recipient address"
+          - name: value
+            description: "Value transferred in wei"
+          - name: blockHash
+            description: "Hash of the block containing this trace"
+          - name: blockNumber
+            description: "Block number containing this trace"
+            tests:
+              - not_null
+          - name: gasUsed
+            description: "Gas used by this specific transaction step"
+          - name: output
+            description: "Return data from the call"
+          - name: subtraces
+            description: "Number of subtraces"
+          - name: traceAddress
+            description: "Array of trace address indices"
+          - name: transactionHash
+            description: "Hash of the transaction this trace belongs to"
+            tests:
+              - not_null
+          - name: transactionPosition
+            description: "Position of the transaction in the block"
+          - name: trace_type
+            description: "Type of the trace"
