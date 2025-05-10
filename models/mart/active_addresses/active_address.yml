@@ -6,7 +6,7 @@ models:
     columns:
       - name: block_date
         tests: [not_null, unique]
-      - name: active_users
+      - name: active_address
         tests: [not_null]
 
   - name: weekly_active_address

@@ -13,10 +13,6 @@ models:
         description: "Block number as string"
         tests:
           - not_null
-      - name: block_number_int
-        description: "Block number as integer"
-        tests:
-          - not_null
       - name: block_timestamp
         description: "Block timestamp as datetime"
         tests:
