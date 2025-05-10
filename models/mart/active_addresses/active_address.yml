@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: daily_active_address
+    description: Daily active Addresses.
+    columns:
+      - name: day
+        tests: [not_null, unique]
+      - name: active_users
+        tests: [not_null]
+
+  - name: weekly_active_address
+    description: Calendar-week active wallets.
+    columns:
+      - name: week_start
+        tests: [not_null, unique]
+      - name: active_users
+        tests: [not_null]
+
+  - name: monthly_active_address
+    description: Calendar-month active wallets.
+    columns:
+      - name: month_start
+        tests: [not_null, unique]
+      - name: active_users
+        tests: [not_null]

@@ -39,12 +39,12 @@ jobs:
         run: |
           pip install "dbt-core" "dbt-clickhouse" \
                       sqlfluff sqlfluff-templater-dbt
+      
+      - name: dbt deps
+        run: dbt deps  
 
       - name: SQLFluff lint
-        run: sqlfluff lint                      
-
-      - name: dbt deps
-        run: dbt deps                            
+        run: sqlfluff lint                                                
 
       - name: dbt compile
         run: dbt compile --target dev            
