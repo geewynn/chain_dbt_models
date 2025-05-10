@@ -4,7 +4,7 @@ models:
   - name: daily_active_address
     description: Daily active Addresses.
     columns:
-      - name: day
+      - name: block_date
         tests: [not_null, unique]
       - name: active_users
         tests: [not_null]
@@ -14,7 +14,7 @@ models:
     columns:
       - name: week_start
         tests: [not_null, unique]
-      - name: active_users
+      - name: active_address
         tests: [not_null]
 
   - name: monthly_active_address
@@ -22,5 +22,5 @@ models:
     columns:
       - name: month_start
         tests: [not_null, unique]
-      - name: active_users
+      - name: active_address
         tests: [not_null]

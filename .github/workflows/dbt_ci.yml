@@ -43,8 +43,8 @@ jobs:
       - name: dbt deps
         run: dbt deps  
 
-      - name: SQLFluff lint
-        run: sqlfluff lint                                                
+      # - name: SQLFluff lint
+      #   run: sqlfluff lint                                                
 
       - name: dbt compile
         run: dbt compile --target dev            

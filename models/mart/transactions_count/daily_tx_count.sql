@@ -5,8 +5,8 @@ with source as (
     select * from {{ ref('int_block_tx_counts') }}
 )
 
-SELECT
-    block_date                 AS day,
-    SUM(tx_per_block)          AS tx_count
-FROM source
-GROUP BY day
+select
+    block_date as day,
+    SUM(tx_per_block) as tx_count
+from source
+group by day

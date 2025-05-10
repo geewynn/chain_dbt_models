@@ -6,12 +6,12 @@ models:
       One row per wallet per calendar day since Sonic launch.
       Flags whether that day is the wallet's first ever appearance.
     columns:
-      - name: day
+      - name: block_date
         description: Calendar day in UTC.
         tests:
           - not_null
 
-      - name: user
+      - name: address
         description: Wallet address (checksummed string).
         tests:
           - not_null

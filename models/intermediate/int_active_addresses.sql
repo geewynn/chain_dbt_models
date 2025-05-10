@@ -1,65 +1,71 @@
 {{ 
     config(
      materialized='incremental',
-     unique_key=['day', 'user'],
+     unique_key=['block_date', 'address'],
      incremental_strategy='delete+insert'
 ) }}
 
 {% set SONIC_LAUNCH = '2024-12-18' %}
 
 
-WITH transactions as (select * from {{ ref('stg_transactions') }}),
-src AS (
+with transactions as (select * from {{ ref('stg_transactions') }}),
 
-    SELECT
-        toDate(block_timestamp)             AS block_date,
+{% if is_incremental() %}
+last_loaded AS (
+        SELECT max(toDate(block_timestamp)) AS max_day            -- e.g. 2025-05-09
+        FROM {{ this }}
+    ),
+{% else %}
+last_loaded AS (
+        SELECT toDate('{{ SONIC_LAUNCH }}') - 1 AS max_day
+    ),
+{% endif %}
+
+src as (
+
+    select
         block_timestamp,
-        from_address                        AS user
-    FROM transactions
-    /* ---- only pick up new dates when running incrementally ---- */
-    {% if is_incremental() %}
-        WHERE toDate(block_timestamp) > (SELECT max(day) FROM {{ this }})
-    {% endif %}
+        from_address as address,
+        toDate(block_timestamp) as block_date
+    from transactions
+        where block_date > (select max_day from last_loaded)
 
 ),
 
+first_transactions as (
 
-first_transactions AS (
-
-    SELECT
-        user,
-        MIN(block_date)  AS first_block_date
-    FROM src                -- safe because src already filters incremental chunk
-    WHERE block_date >= toDate('{{ SONIC_LAUNCH }}')
-    GROUP BY user
-
-),
-
-daily_pairs AS (
-
-    SELECT
-        block_date AS day,
-        user
-    FROM src
-    GROUP BY day, user
+    select
+        address,
+        MIN(block_date) as first_block_date
+    from src
+    where block_date >= toDate('{{ SONIC_LAUNCH }}')
+    group by address
 
 ),
 
+daily_pairs as (
 
-final AS (
+    select
+        block_date,
+        address
+    from src
+    group by block_date, address
 
-    SELECT
-        dp.day,
-        dp.user,
-        /* flag = 1 when today == wallet’s first ever txn date */
-        IF(dp.day = fa.first_block_date, 1, 0) AS is_new_user
-    FROM daily_pairs           dp
-    LEFT JOIN first_transactions fa USING (user)
+),
+
+final as (
+
+    select
+        daily.block_date as block_date,
+        daily.address as address,
+        IF(daily.block_date = first_tx.first_block_date, 1, 0) as is_new_user
+    from daily_pairs as daily
+    left join first_transactions as first_tx using (address)
 
 )
 
-SELECT
-    day,
-    user,
+select
+    block_date,
+    address,
     is_new_user
-FROM final
+from final

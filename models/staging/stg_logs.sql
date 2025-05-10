@@ -10,21 +10,19 @@ with source as (
 
 transformed_logs as (
     select
-        blockhash as block_hash,
-        transactionhash as transaction_hash,
-        `address`,
-        topics,
+        blockHash as block_hash,
+        reinterpretAsUInt64(reverse(unhex(replaceAll(blockNumber, '0x', '')))) as block_number,
+        transactionHash as transaction_hash,
+        reinterpretAsUInt32(reverse(unhex(replaceAll(logIndex, '0x', '')))) as log_index,
 
         -- Log content
+        `address`,
+        topics,
         `data`,
-        removed,
-        reinterpretasuint64(reverse(unhex(replaceall(blocknumber, '0x', ''))))
-            as block_number,
-
+        
         -- Status
-        reinterpretasuint32(reverse(unhex(replaceall(logindex, '0x', ''))))
-            as log_index,
-
+        removed,
+        
         -- Metadata
         now() as dbt_loaded_at
     from source

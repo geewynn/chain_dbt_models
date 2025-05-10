@@ -11,32 +11,32 @@ with source as (
 transformed_logs as (
     select
         -- Primary keys
-        transactionhash as transaction_hash,
-        transactionposition as transaction_position,
-
+        transactionHash as transaction_hash,
+        transactionPosition as transaction_position,
+        
         -- Blockchain location
-        blockhash as block_hash,
-        blocknumber,
-
+        blockHash as block_hash,
+        blockNumber,
+        
         -- Call information
-        calltype as call_type,
+        callType as call_type,
         from_address,
         to_address,
         trace_type,
-
+        
         -- Call data
         input,
-        `output` as call_output,
-
+        `output`,
+        
         -- Numeric fields - handle the hex conversion
-        subtraces,
-        traceaddress as trace_address,
         reinterpretAsUInt64(reverse(unhex(replaceAll(gas, '0x', '')))) as gas,
         reinterpretAsUInt256(reverse(unhex(replaceAll(value, '0x', '')))) as value,
-
+        reinterpretAsUInt64(reverse(unhex(replaceAll(gasUsed, '0x', '')))) as gas_used,
+        subtraces,
+        
         -- Trace structure
-        reinterpretAsUInt64(reverse(unhex(replaceAll(gasused, '0x', '')))) as gas_used,
-
+        traceAddress as trace_address,
+        
         -- Metadata
         now() as dbt_loaded_at
     from source

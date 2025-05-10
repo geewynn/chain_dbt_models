@@ -8,10 +8,10 @@ with source as (
     select * from {{ ref('int_active_addresses') }}
 )
 
-SELECT
-    day,
-    COUNT(DISTINCT user) AS active_users,
-    COUNT(DISTINCT IF(is_new_user = 1, user, NULL)) AS new_users,
-    COUNT(DISTINCT IF(is_new_user = 0, user, NULL)) AS returning_users
-FROM source
-GROUP BY day
+select
+    block_date,
+    COUNT(distinct `address`) as active_address,
+    COUNT(distinct IF(is_new_user = 1, `address`, null)) as new_address,
+    COUNT(distinct IF(is_new_user = 0, `address`, null)) as returning_address
+from source
+group by block_date

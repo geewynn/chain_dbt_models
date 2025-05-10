@@ -12,46 +12,35 @@ with source as (
 transformed_blocks as (
     select
         `hash` as block_hash,
-        parenthash as parent_hash,
-        sha3uncles as sha3_uncles,
+        reinterpretAsUInt64(reverse(unhex(replace(number, '0x', '')))) as block_number,
+        parentHash as parent_hash,
+        sha3Uncles as sha3_uncles,
         miner,
-        stateroot as state_root,
-        transactionsroot as transactions_root,
-        receiptsroot as receipts_root,
-        logsbloom as logs_bloom,
-        extradata as extra_data,
-
-        mixhash as mix_hash,
-        nonce,
-        withdrawalsroot as withdrawals_root,
-        uncles,
-        reinterpretasuint256(reverse(unhex(replace(number, '0x', ''))))
-            as block_number,
-
+        stateRoot as state_root,
+        transactionsRoot as transactions_root,
+        receiptsRoot as receipts_root,
+        logsBloom as logs_bloom,
+        
+        reinterpretAsUInt256(reverse(unhex(replace(difficulty, '0x', '')))) as difficulty,
+        reinterpretAsUInt64(reverse(unhex(replace(gasLimit, '0x', '')))) as gas_limit,
+        reinterpretAsUInt64(reverse(unhex(replace(gasUsed, '0x', '')))) as gas_used,
+        reinterpretAsUInt64(reverse(unhex(replace(timestamp, '0x', '')))) as block_timestamp,
+        reinterpretAsUInt64(reverse(unhex(replace(timestampNano, '0x', '')))) as timestamp_nano,
+        
         -- Additional fields
-        reinterpretasuint256(reverse(unhex(replace(difficulty, '0x', ''))))
-            as difficulty,
-        reinterpretasuint64(reverse(unhex(replace(gaslimit, '0x', ''))))
-            as gas_limit,
-        reinterpretasuint64(reverse(unhex(replace(gasused, '0x', ''))))
-            as gas_used,
-        reinterpretasuint64(reverse(unhex(replace(timestamp, '0x', ''))))
-            as block_timestamp,
-        reinterpretasuint64(reverse(unhex(replace(timestampnano, '0x', ''))))
-            as timestamp_nano,
-        reinterpretasuint256(reverse(unhex(replace(basefeepergas, '0x', ''))))
-            as base_fee_per_gas,
+        extraData as extra_data,
+        mixHash as mix_hash,
+        nonce,
+        reinterpretAsUInt256(reverse(unhex(replace(baseFeePerGas, '0x', '')))) as base_fee_per_gas,
+        reinterpretAsUInt64(reverse(unhex(replace(epoch, '0x', '')))) as epoch,
+        reinterpretAsUInt256(reverse(unhex(replace(totalDifficulty, '0x', '')))) as total_difficulty,
+        
+        withdrawalsRoot as withdrawals_root,
+        reinterpretAsUInt64(reverse(unhex(replace(blobGasUsed, '0x', '')))) as blob_gas_used,
+        reinterpretAsUInt64(reverse(unhex(replace(excessBlobGas, '0x', '')))) as excess_blob_gas,
+        reinterpretAsUInt64(reverse(unhex(replace(size, '0x', '')))) as size,
 
-        reinterpretasuint64(reverse(unhex(replace(epoch, '0x', '')))) as epoch,
-        reinterpretasuint256(
-            reverse(unhex(replace(totaldifficulty, '0x', '')))
-        ) as total_difficulty,
-        reinterpretasuint64(reverse(unhex(replace(blobgasused, '0x', ''))))
-            as blob_gas_used,
-        reinterpretasuint64(reverse(unhex(replace(excessblobgas, '0x', ''))))
-            as excess_blob_gas,
-
-        reinterpretasuint64(reverse(unhex(replace(size, '0x', '')))) as size,
+        uncles,
         current_timestamp() as dbt_loaded_at
     from source
 )
