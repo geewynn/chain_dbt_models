@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: int_active_addresses
+    description: >
+      One row per wallet per calendar day since Sonic launch.
+      Flags whether that day is the wallet's first ever appearance.
+    columns:
+      - name: day
+        description: Calendar day in UTC.
+        tests:
+          - not_null
+
+      - name: user
+        description: Wallet address (checksummed string).
+        tests:
+          - not_null
+
+      - name: is_new_user
+        description: 1 if the wallet's first transaction date == day, else 0.
+        tests:
+          - not_null

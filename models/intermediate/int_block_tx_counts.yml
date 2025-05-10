@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: int_block_tx_counts
+    description: >
+      One row per block mined since Sonic launch, with the transaction count.
+    columns:
+      - name: block_number
+        description: Unique identifier for the block.
+        tests:
+          - not_null
+          - unique
+
+      - name: block_date
+        description: Calendar day the block was first seen.
+        tests:
+          - not_null
+
+      - name: block_ts
+        description: Timestamp of the first tx in the block.
+        tests:
+          - not_null
+
+      - name: tx_per_block
+        description: Number of transactions inside the block.
+        tests:
+          - not_null
