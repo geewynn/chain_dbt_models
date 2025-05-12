@@ -8,7 +8,7 @@ on:
     # run on every PR, whatever the source/target; skip gh-pages
     branches-ignore: [gh-pages]
   schedule:
-  - cron: '*/15 * * * *' # Runs every 15 minutes
+    - cron: '*/15 * * * *' # Runs every 15 minutes
 concurrency:
   group: ci-${{ github.head_ref || github.ref }}  
   cancel-in-progress: true                       
