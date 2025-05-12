@@ -27,8 +27,6 @@ jobs:
       CLICKHOUSE_PROD_USER: ${{ secrets.CLICKHOUSE_PROD_USER }}
       CLICKHOUSE_PROD_PORT: ${{ secrets.CLICKHOUSE_PROD_PORT }}
       CLICKHOUSE_PROD_SCHEMA: ${{ secrets.CLICKHOUSE_PROD_SCHEMA }}
-    
-
     steps:
       - name: "Step 01 - Checkout current branch"
         id: step-01
