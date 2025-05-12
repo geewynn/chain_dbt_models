@@ -1,44 +1,102 @@
-name: Publish dbt Docs → GitHub Pages
+name: "dbt prod pipeline pipeline"
 
+# Triggers
 on:
-  workflow_run:
-    workflows: ["dbt CI"]        # must match the CI workflow name
-    branches:  [main]
-    types:     [completed]
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-  actions:  read                 
-  pages:    write
-  id-token: write
+  # Triggers the workflow on push to main branch
+  push:
+    branches:
+      - main
+  # Triggers the workflow manually from GUI
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    if: github.event.workflow_run.conclusion == 'success'
+  # Build job
+  build:
     runs-on: ubuntu-latest
     env:
+      # Tell dbt where the repo-scoped profiles.yml lives
       DBT_PROFILES_DIR: .
+      # Inject warehouse secrets from Settings → Secrets → Actions
+      CLICKHOUSE_DEV_PASSWORD: ${{ secrets.CLICKHOUSE_DEV_PASSWORD }}
+      CLICKHOUSE_DEV_HOST: ${{ secrets.CLICKHOUSE_DEV_HOST }}
+      CLICKHOUSE_DEV_USER: ${{ secrets.CLICKHOUSE_DEV_USER }}
+      CLICKHOUSE_DEV_PORT: ${{ secrets.CLICKHOUSE_DEV_PORT }}
+      CLICKHOUSE_DEV_SCHEMA: ${{ secrets.CLICKHOUSE_DEV_SCHEMA }}
       CLICKHOUSE_PROD_PASSWORD: ${{ secrets.CLICKHOUSE_PROD_PASSWORD }}
-      CLICKHOUSE_PROD_HOST:     ${{ secrets.CLICKHOUSE_PROD_HOST }}
-      CLICKHOUSE_PROD_USER:     ${{ secrets.CLICKHOUSE_PROD_USER }}
-      CLICKHOUSE_PROD_PORT:     ${{ secrets.CLICKHOUSE_PROD_PORT }}
-      CLICKHOUSE_PROD_SCHEMA:   ${{ secrets.CLICKHOUSE_PROD_SCHEMA }}
+      CLICKHOUSE_PROD_HOST: ${{ secrets.CLICKHOUSE_PROD_HOST }}
+      CLICKHOUSE_PROD_USER: ${{ secrets.CLICKHOUSE_PROD_USER }}
+      CLICKHOUSE_PROD_PORT: ${{ secrets.CLICKHOUSE_PROD_PORT }}
+      CLICKHOUSE_PROD_SCHEMA: ${{ secrets.CLICKHOUSE_PROD_SCHEMA }}
+    
 
     steps:
-      - name: Download docs artifact from CI run
-        uses: actions/download-artifact@v4
-        with:
-          name: dbt-docs
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}  
+      - name: "Step 01 - Checkout current branch"
+        id: step-01
+        uses: actions/checkout@v3
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dbt-docs
+      - name: Install dbt + linter
+        id: step-02
+        run: |
+          pip install "dbt-core" "dbt-clickhouse" \
+                      sqlfluff sqlfluff-templater-dbt
 
-      - uses: actions/deploy-pages@v2
+      - name: "Step 04 - Compile dbt"
+        id: step-04
+        working-directory: ./dbt-docs/dbt
+        run: |
+          ls -ltra
+          export DBT_PROFILES_DIR=$PWD
+          dbt deps
+          dbt debug --target prod 
+          dbt compile --target prod 
+
+      - name: "Step 05 - Generate dbt docs"
+        id: step-05
+        working-directory: ./dbt-docs/dbt
+        run: |
+          export DBT_PROFILES_DIR=$PWD
+          dbt deps
+          dbt docs generate --target prod 
+          cd target
+          mkdir ${{ github.workspace }}/docs
+          cp *.json *.html graph.gpickle ${{ github.workspace }}/docs
+          ls -ltra ${{ github.workspace }}/docs
+
+      - name: "Step 06 - Upload pages to artifact"
+        id: step-06
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ${{ github.workspace }}/docs
+
+      - name: "Step 07 - Zip artifact"
+        id: step-07
+        run: zip -jrq docs.zip ${{ github.workspace }}/docs
+
+      - name: "Step 08 - Upload artifact for deployment job"
+        id: step-08
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: docs.zip
+
+  # Deploy to Github pages
+  deploy-to-github-pages:
+    # Add a dependency to the build job
+    needs: build
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # Specify runner + deployment step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
