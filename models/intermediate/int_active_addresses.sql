@@ -10,10 +10,10 @@
 with transactions as (select * from {{ ref('stg_transactions') }}),
 
 {% if is_incremental() %}
-last_loaded AS (
-    SELECT max(block_date) AS max_day
-    FROM {{ this }}
-),
+    last_loaded as (
+        select max(block_date) as max_day
+        from {{ this }}
+    ),
 {% else %}
 last_loaded AS (
     SELECT toDate('{{ SONIC_LAUNCH }}') - 1 AS max_day
@@ -22,11 +22,11 @@ last_loaded AS (
 
 src as (
     select
-        block_timestamp,
-        from_address as address,
-        toDate(block_timestamp) as block_date
-    from transactions
-    join last_loaded on 1=1  -- Using join instead of correlated subquery
+        trans.block_timestamp as block_timestamp,
+        trans.from_address as address,
+        toDate(trans.block_timestamp) as block_date
+    from transactions as trans
+    inner join last_loaded on 1 = 1
     where block_date > max_day
 ),
 
@@ -52,8 +52,8 @@ final as (
         daily.block_date as block_date,
         daily.address as address,
         IF(daily.block_date = first_tx.first_block_date, 1, 0) as is_new_user
-    from daily_pairs as daily
-    left join first_transactions as first_tx using (address)
+    from daily_pairs daily
+    left join first_transactions first_tx using (address)
 )
 
 select

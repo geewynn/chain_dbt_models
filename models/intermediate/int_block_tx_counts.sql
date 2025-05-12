@@ -6,8 +6,9 @@
 
 {% set SONIC_LAUNCH = '2024-12-18' %}
 
-with
-source as (select * from {{ ref('stg_transactions') }}),
+with source as (
+    select * from {{ ref('stg_transactions') }}
+),
 
 src as (
     /* one scan, one GROUP BY — no correlated sub-query needed */
@@ -22,7 +23,8 @@ src as (
         {% if is_incremental() %}
             and block_number > (select max(block_number) from {{ this }})
         {% endif %}
-    group by block_number
+    group by
+        block_number
 )
 
 select

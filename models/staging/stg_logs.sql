@@ -19,10 +19,10 @@ transformed_logs as (
         `address`,
         topics,
         `data`,
-        
+
         -- Status
         removed,
-        
+
         -- Metadata
         now() as dbt_loaded_at
     from source
