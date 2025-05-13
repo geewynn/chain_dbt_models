@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: daily_tx_count
+    description: Total transactions per calendar day.
+    columns:
+      - name: day
+        tests: [not_null, unique]
+      - name: tx_count
+        tests: [not_null]
+
+  - name: weekly_tx_count
+    description: Total transactions per ISO calendar week (Monday start).
+    columns:
+      - name: week_start
+        tests: [not_null, unique]
+      - name: tx_count
+        tests: [not_null]
+
+  - name: monthly_tx_count
+    description: Total transactions per calendar month.
+    columns:
+      - name: month_start
+        tests: [not_null, unique]
+      - name: tx_count
+        tests: [not_null]
+  
+  - name: block_and_transactions_per_sec
+    description: Total transactions per calendar month.
+    columns:
+      - name: second
+        tests: [not_null, unique]
+      - name: blocks
+        tests: [not_null]
+      - name: transaction_count
+        tests: [not_null]
+      - name: blocks_per_sec
+        tests: [not_null]
+      - name: transactions_per_sec
+        tests: [not_null]
+
+  - name: avg_tps_and_bps
+    description: Total transactions per calendar month.
+    columns:
+      - name: total_blocks
+        tests: [not_null, unique]
+      - name: total_tx
+        tests: [not_null]
+      - name: period_seconds
+        tests: [not_null]
+      - name: avg_bps
+        tests: [not_null]
+      - name: avg_tps
+        tests: [not_null]
