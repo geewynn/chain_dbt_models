@@ -1,4 +1,3 @@
--- models/marts/fct_tx_daily.sql
 {{ config(materialized='view') }}
 
 with source as (
@@ -6,7 +5,7 @@ with source as (
 )
 
 select
-    date_trunc('week', block_date) as week_start,
+    date_trunc('month', block_date) as month_start,
     SUM(tx_per_block) as tx_count
 from source
-group by week_start
+group by month_start

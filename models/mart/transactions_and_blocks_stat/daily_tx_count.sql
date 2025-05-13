@@ -1,4 +1,3 @@
--- models/marts/fct_tx_daily.sql
 {{ config(materialized='view') }}
 
 with source as (
