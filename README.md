@@ -33,6 +33,12 @@ then run
 This should work for windows
 
 
+### Dashboard
+The screenshot below shows the dashboard built from the current models in this repository. The development of these models will follow an iterative approach and more insights will be added to this dashboard while the projects continues to grow.
+
+![alt text](images/tx.png)
+![alt text](images/address.png)
+
 ### Resources:
 - Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
 - Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
